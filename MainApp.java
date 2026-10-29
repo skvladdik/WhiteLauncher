@@ -1,5 +1,4 @@
 
-private void showSystemInfo() {
     Alert alert = new Alert(Alert.AlertType.INFORMATION);
     alert.setTitle("CraftLight Launcher");
     alert.setHeaderText("Информация о компьютере");
