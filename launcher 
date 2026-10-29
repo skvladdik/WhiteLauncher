@@ -1,3 +1,5 @@
+
+
 CraftLightLauncher/
 ├── build.gradle
 ├── settings.gradle
@@ -9,3 +11,21 @@ CraftLightLauncher/
                 └── craftlight/
                     └── launcher/
                         └── MainApp.java
+
+
+
+
+
+CraftLightLauncher/
+├── settings.gradle
+├── build.gradle
+├── README.md
+└── src/
+    └── main/
+        └── java/
+            └── com/
+                └── craftlight/
+                    └── launcher/
+                        ├── MainApp.java
+                        ├── LauncherSettings.java
+                        └── GameLauncher.java
