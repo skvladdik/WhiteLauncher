@@ -1,369 +1,317 @@
 
-private void showSystemInfo() {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("WhiteLauncher");
-    alert.setHeaderText("Информация о компьютере");
-    alert.setContentText(SystemInfo.getReport());
-    alert.getDialogPane().setPrefWidth(480);
-    alert.showAndWait();
-}
-
-private void checkMinecraftFiles(String minecraftDirectory) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("WhiteLauncher");
-    alert.setHeaderText("Результат проверки");
-    alert.setContentText(
-        MinecraftFilesChecker.check(minecraftDirectory)
-    );
-    alert.getDialogPane().setPrefWidth(520);
-    alert.showAndWait();
-}
-
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("CraftLight Launcher");
-    alert.setHeaderText("Информация о компьютере");
-    alert.setContentText(SystemInfo.getReport());
-    alert.getDialogPane().setPrefWidth(480);
-    alert.showAndWait();
-}
-
-private void checkMinecraftFiles(String minecraftDirectory) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("CraftLight Launcher");
-    alert.setHeaderText("Результат проверки");
-    alert.setContentText(
-            MinecraftFilesChecker.check(minecraftDirectory)
-    );
-    alert.getDialogPane().setPrefWidth(520);
-    alert.showAndWait();
-}
-
-private void showSystemInfo() {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("CraftLight Launcher");
-    alert.setHeaderText("Информация о компьютере");
-    alert.setContentText(SystemInfo.getReport());
-    alert.getDialogPane().setPrefWidth(480);
-    alert.showAndWait();
-
-
-
-package ru.whitelauncher;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 public class MainApp extends Application {
 
-    private static final String BLUE = "#2878F8";
-    private static final String TEXT = "#17243B";
-    private static final String MUTED = "#7889A5";
+    private static final String BLUE = "#3978F6";
+    private static final String BACKGROUND = "#F4F7FC";
 
-    private BorderPane root;
-    private VBox sidebar;
-    private Label status;
+    private TextField nicknameField;
     private ComboBox<String> versionBox;
-    private Slider memorySlider;
-    private Label memoryValue;
-    private String currentPage = "Главная";
+    private Label ramLabel;
+    private Slider ramSlider;
+    private Stage mainStage;
 
     @Override
     public void start(Stage stage) {
-        root = new BorderPane();
-        root.setStyle("-fx-background-color: #F5F8FD;");
+        mainStage = stage;
 
-        sidebar = createSidebar();
-        root.setLeft(sidebar);
-        root.setCenter(createHome());
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + BACKGROUND + ";");
 
-        Scene scene = new Scene(root, 1250, 820);
-        scene.getStylesheets().add(
-                getClass().getResource("/styles.css").toExternalForm()
+        root.setLeft(createSidebar());
+
+        VBox content = new VBox(22);
+        content.setPadding(new Insets(35));
+        content.getChildren().addAll(
+                createHeader(),
+                createWelcomeCard(),
+                createGameSettings(),
+                createPlayButton(),
+                createFooter()
         );
 
+        root.setCenter(content);
+
+        Scene scene = new Scene(root, 1050, 720);
+
         stage.setTitle("WhiteLauncher");
-        stage.setMinWidth(950);
-        stage.setMinHeight(650);
+        stage.setMinWidth(850);
+        stage.setMinHeight(600);
         stage.setScene(scene);
         stage.show();
     }
 
+    // Боковое меню
     private VBox createSidebar() {
-        VBox side = new VBox(12);
-        side.setPadding(new Insets(26, 16, 20, 16));
-        side.setPrefWidth(215);
-        side.setStyle("-fx-background-color: white;");
+        VBox sidebar = new VBox(15);
+        sidebar.setPadding(new Insets(30, 18, 25, 18));
+        sidebar.setPrefWidth(220);
+        sidebar.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-border-color: #E8EDF5;" +
+                "-fx-border-width: 0 1 0 0;"
+        );
 
         Label logo = new Label("⬡ WhiteLauncher");
-        logo.setFont(Font.font("System", 20));
-        logo.setStyle("-fx-font-weight: bold; -fx-text-fill: " + TEXT + ";");
+        logo.setFont(Font.font("Arial", 21));
+        logo.setStyle("-fx-font-weight: bold; -fx-text-fill: #253653;");
 
-        Label subtitle = new Label("Minecraft — просто и удобно");
-        subtitle.setStyle("-fx-text-fill: " + MUTED + "; -fx-font-size: 11px;");
-
-        VBox brand = new VBox(5, logo, subtitle);
-        brand.setPadding(new Insets(4, 4, 24, 4));
-
-        side.getChildren().add(brand);
-
-        String[] pages = {
-                "Главная", "Версии", "Настройки",
-                "Аккаунты", "Моды", "Папка игры", "О лаунчере"
-        };
-
-        for (String page : pages) {
-            Button button = new Button(page);
-            button.setMaxWidth(Double.MAX_VALUE);
-            button.setAlignment(Pos.CENTER_LEFT);
-            button.getStyleClass().add("nav-button");
-
-            if (page.equals(currentPage)) {
-                button.getStyleClass().add("nav-selected");
-            }
-
-            button.setOnAction(e -> showPage(page));
-            side.getChildren().add(button);
-        }
+        Label subtitle = new Label("MINECRAFT LAUNCHER");
+        subtitle.setStyle(
+                "-fx-text-fill: #9AA6B8;" +
+                "-fx-font-size: 10px;"
+        );
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        Label footer = new Label("WhiteLauncher\nВерсия 1.0.0");
-        footer.setStyle("-fx-text-fill: " + MUTED + "; -fx-font-size: 12px;");
-
-        side.getChildren().addAll(spacer, footer);
-        return side;
-    }
-
-    private void showPage(String page) {
-        currentPage = page;
-        root.setLeft(createSidebar());
-
-        switch (page) {
-            case "Главная" -> root.setCenter(createHome());
-            case "Версии" -> root.setCenter(createVersionsPage());
-            case "Настройки" -> root.setCenter(createSettingsPage());
-            case "Аккаунты" -> root.setCenter(simplePage(
-                    "Аккаунты", "Подключение Microsoft будет добавлено позже."
-            ));
-            case "Моды" -> root.setCenter(simplePage(
-                    "Моды", "Здесь появится управление модами Minecraft."
-            ));
-            case "Папка игры" -> root.setCenter(simplePage(
-                    "Папка игры",
-                    "Открытие папки игры подключим на следующем этапе."
-            ));
-            default -> root.setCenter(simplePage(
-                    "О WhiteLauncher",
-                    "Собственный лаунчер Minecraft на Java 21."
-            ));
-        }
-    }
-
-    private VBox createHome() {
-        VBox page = pageContainer();
-
-        VBox hero = new VBox(10);
-        hero.setPadding(new Insets(28));
-        hero.setStyle(
-                "-fx-background-color: linear-gradient(to right, #173A65, #3289EA);" +
-                "-fx-background-radius: 18;"
+        sidebar.getChildren().addAll(
+                logo,
+                subtitle,
+                new Separator(),
+                menuButton("⌂", "Главная"),
+                menuButton("▣", "Версии"),
+                menuButton("⚙", "Настройки"),
+                menuButton("♙", "Аккаунт"),
+                menuButton("◇", "О лаунчере"),
+                spacer,
+                new Label("WhiteLauncher v1.0.0")
         );
 
-        Label welcome = new Label("Добро пожаловать\nв WhiteLauncher!");
-        welcome.setStyle("-fx-text-fill: white; -fx-font-size: 27px;" +
-                "-fx-font-weight: bold;");
+        return sidebar;
+    }
+
+    private Button menuButton(String icon, String name) {
+        Button button = new Button(icon + "   " + name);
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.setPadding(new Insets(13));
+        button.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: #52627A;" +
+                "-fx-font-size: 14px;" +
+                "-fx-background-radius: 10;"
+        );
+
+        button.setOnAction(e -> {
+            showMessage(name, "Раздел " + name);
+        });
+
+        return button;
+    }
+
+    // Верхняя панель
+    private VBox createHeader() {
+        Label title = new Label("Главная");
+        title.setFont(Font.font("Arial", 29));
+        title.setStyle("-fx-font-weight: bold; -fx-text-fill: #253653;");
 
         Label description = new Label(
-                "Запускай Minecraft быстро, легко и с комфортом."
+                "Добро пожаловать в WhiteLauncher!"
         );
-        description.setStyle("-fx-text-fill: #E5F0FF; -fx-font-size: 14px;");
+        description.setStyle(
+                "-fx-text-fill: #8794A8; -fx-font-size: 14px;"
+        );
 
-        hero.getChildren().addAll(welcome, description);
+        return new VBox(7, title, description);
+    }
 
-        VBox game = card("Настройки запуска");
+    // Приветственный блок
+    private VBox createWelcomeCard() {
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(25));
+        card.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 18;" +
+                "-fx-border-color: #E7EDF6;" +
+                "-fx-border-radius: 18;"
+        );
 
-        Label versionLabel = heading("Версия Minecraft");
+        Label welcome = new Label("ТВОЙ МИР MINECRAFT");
+        welcome.setStyle(
+                "-fx-text-fill: " + BLUE + ";" +
+                "-fx-font-size: 11px;" +
+                "-fx-font-weight: bold;"
+        );
+
+        Label heading = new Label("Время играть!");
+        heading.setFont(Font.font("Arial", 27));
+        heading.setStyle(
+                "-fx-text-fill: #253653;" +
+                "-fx-font-weight: bold;"
+        );
+
+        Label text = new Label(
+                "Выбери версию, настрой игру и отправляйся в приключение."
+        );
+        text.setWrapText(true);
+        text.setStyle("-fx-text-fill: #7F8DA3;");
+
+        card.getChildren().addAll(welcome, heading, text);
+        return card;
+    }
+
+    // Настройки игры
+    private VBox createGameSettings() {
+        VBox panel = new VBox(18);
+        panel.setPadding(new Insets(25));
+        panel.setStyle(
+                "-fx-background-color: white;" +
+                "-fx-background-radius: 18;" +
+                "-fx-border-color: #E7EDF6;" +
+                "-fx-border-radius: 18;"
+        );
+
+        Label title = new Label("Настройки игры");
+        title.setFont(Font.font("Arial", 19));
+        title.setStyle("-fx-font-weight: bold;");
+
+        nicknameField = new TextField("Player123");
+        nicknameField.setPromptText("Введите игровой ник");
+        nicknameField.setPrefHeight(42);
+
         versionBox = new ComboBox<>();
         versionBox.getItems().addAll(
-                "1.21.1", "1.21.4", "1.20.1", "1.19.4", "1.12.2"
+                "1.21.1",
+                "1.21",
+                "1.20.4",
+                "1.20.1",
+                "1.19.4",
+                "1.18.2",
+                "1.16.5",
+                "1.12.2"
         );
         versionBox.setValue("1.21.1");
         versionBox.setMaxWidth(Double.MAX_VALUE);
+        versionBox.setPrefHeight(42);
 
-        Label memoryLabel = heading("Оперативная память");
-        memorySlider = new Slider(2, 12, 4);
-        memorySlider.setShowTickLabels(true);
-        memorySlider.setMajorTickUnit(2);
-        memorySlider.setBlockIncrement(1);
+        ramLabel = new Label("Оперативная память: 4 ГБ");
 
-        memoryValue = new Label("4 ГБ");
-        memoryValue.setStyle("-fx-text-fill: " + BLUE + "; -fx-font-weight: bold;");
+        ramSlider = new Slider(2, 16, 4);
+        ramSlider.setShowTickLabels(true);
+        ramSlider.setShowTickMarks(true);
+        ramSlider.setMajorTickUnit(2);
+        ramSlider.setBlockIncrement(1);
 
-        memorySlider.valueProperty().addListener((obs, oldValue, newValue) -> {
-            int memory = (int) Math.round(newValue.doubleValue());
-            memoryValue.setText(memory + " ГБ");
-        });
+        ramSlider.valueProperty().addListener(
+                (obs, oldValue, newValue) -> {
+                    int ram = newValue.intValue();
+                    ramLabel.setText(
+                            "Оперативная память: " + ram + " ГБ"
+                    );
+                }
+        );
 
-        HBox memoryHeader = new HBox(10, memoryLabel, memoryValue);
-        memoryHeader.setAlignment(Pos.CENTER_LEFT);
+        panel.getChildren().addAll(
+                title,
+                new Label("Ник игрока"),
+                nicknameField,
+                new Label("Версия Minecraft"),
+                versionBox,
+                ramLabel,
+                ramSlider
+        );
 
-        CheckBox mods = new CheckBox("Разрешить моды");
-        mods.setSelected(true);
+        return panel;
+    }
 
-        CheckBox fullscreen = new CheckBox("Полноэкранный режим");
-        CheckBox customJvm = new CheckBox("Выделенный JVM");
-        customJvm.setSelected(true);
+    // Кнопка запуска
+    private VBox createPlayButton() {
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.CENTER);
 
-        VBox options = new VBox(12, mods, fullscreen, customJvm);
+        Button play = new Button("▶     ИГРАТЬ");
+        play.setMaxWidth(Double.MAX_VALUE);
+        play.setPrefHeight(58);
+        play.setStyle(
+                "-fx-background-color: " + BLUE + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 18px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-background-radius: 13;" +
+                "-fx-cursor: hand;"
+        );
 
-        Button launch = new Button("▶   Запустить Minecraft");
-        launch.getStyleClass().add("launch-button");
-        launch.setMaxWidth(Double.MAX_VALUE);
-        launch.setOnAction(e -> {
-            status.setText(
-                    "Демонстрация: выбрана версия " + versionBox.getValue()
-                    + ". Реальный запуск ещё не подключён."
+        play.setOnAction(e -> {
+            String nickname = nicknameField.getText().trim();
+
+            if (nickname.isEmpty()) {
+                showMessage("Ошибка", "Введи игровой ник!");
+                return;
+            }
+
+            showMessage(
+                    "WhiteLauncher",
+                    "Выбрана версия Minecraft " +
+                    versionBox.getValue() +
+                    "\nИгрок: " + nickname +
+                    "\nПамять: " +
+                    (int) ramSlider.getValue() + " ГБ" +
+                    "\n\nДля запуска игры необходимо подключить загрузчик Minecraft."
             );
         });
 
-        status = new Label("Готов к настройке");
-        status.setWrapText(true);
-        status.setStyle("-fx-text-fill: " + MUTED + "; -fx-font-size: 12px;");
+        Button check = new Button("Проверить файлы Minecraft");
+        check.setMaxWidth(Double.MAX_VALUE);
+        check.setPrefHeight(42);
 
-        game.getChildren().addAll(
-                versionLabel, versionBox,
-                memoryHeader, memorySlider,
-                new Separator(), options,
-                launch, status
-        );
+        check.setOnAction(e -> checkMinecraftFiles());
 
-        VBox news = card("Новости");
-
-        Label newsTitle = heading("Добро пожаловать!");
-        Label newsText = new Label(
-                "Здесь будут новости Minecraft и обновления WhiteLauncher."
-        );
-        newsText.setWrapText(true);
-        newsText.setStyle("-fx-text-fill: " + MUTED + ";");
-
-        news.getChildren().addAll(newsTitle, newsText);
-
-        HBox columns = new HBox(18, game, news);
-        HBox.setHgrow(game, Priority.ALWAYS);
-        HBox.setHgrow(news, Priority.ALWAYS);
-        game.setPrefWidth(610);
-        news.setPrefWidth(280);
-
-        page.getChildren().addAll(hero, columns);
-        return page;
-    }
-
-    private VBox createVersionsPage() {
-        VBox page = pageContainer();
-        VBox card = card("Управление версиями");
-
-        Label info = new Label(
-                "Выбери версию для будущей установки Minecraft."
-        );
-        info.setWrapText(true);
-
-        ComboBox<String> versions = new ComboBox<>();
-        versions.getItems().addAll(
-                "1.21.1", "1.21.4", "1.20.1", "1.19.4", "1.12.2"
-        );
-        versions.setValue("1.21.1");
-        versions.setMaxWidth(Double.MAX_VALUE);
-
-        Button install = new Button("Подготовить установку");
-        install.getStyleClass().add("launch-button");
-        install.setOnAction(e -> showInfo(
-                "Установка пока не подключена. Сейчас это интерфейс-прототип."
-        ));
-
-        card.getChildren().addAll(info, versions, install);
-        page.getChildren().add(card);
-        return page;
-    }
-
-    private VBox createSettingsPage() {
-        VBox page = pageContainer();
-        VBox card = card("Настройки лаунчера");
-
-        CheckBox remember = new CheckBox("Сохранять настройки");
-        remember.setSelected(true);
-
-        CheckBox notifications = new CheckBox("Показывать уведомления");
-        notifications.setSelected(true);
-
-        Label info = new Label(
-                "Сохранение настроек в файл добавим следующим этапом."
-        );
-        info.setWrapText(true);
-        info.setStyle("-fx-text-fill: " + MUTED + ";");
-
-        card.getChildren().addAll(remember, notifications, info);
-        page.getChildren().add(card);
-        return page;
-    }
-
-    private VBox simplePage(String title, String description) {
-        VBox page = pageContainer();
-        VBox card = card(title);
-
-        Label info = new Label(description);
-        info.setWrapText(true);
-        info.setStyle("-fx-text-fill: " + MUTED + ";");
-
-        card.getChildren().add(info);
-        page.getChildren().add(card);
-        return page;
-    }
-
-    private VBox pageContainer() {
-        VBox page = new VBox(20);
-        page.setPadding(new Insets(28));
-        page.setFillWidth(true);
-        return page;
-    }
-
-    private VBox card(String title) {
-        VBox box = new VBox(16);
-        box.setPadding(new Insets(22));
-        box.setStyle(
-                "-fx-background-color: white;" +
-                "-fx-background-radius: 16;" +
-                "-fx-border-color: #E4EBF5;" +
-                "-fx-border-radius: 16;"
-        );
-
-        Label titleLabel = heading(title);
-        box.getChildren().add(titleLabel);
+        box.getChildren().addAll(play, check);
         return box;
     }
 
-    private Label heading(String text) {
-        Label label = new Label(text);
-        label.setStyle(
-                "-fx-text-fill: " + TEXT + ";" +
-                "-fx-font-size: 15px;" +
-                "-fx-font-weight: bold;"
-        );
-        return label;
+    // Проверка папки Minecraft
+    private void checkMinecraftFiles() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Выбери папку Minecraft");
+
+        File directory = chooser.showDialog(mainStage);
+
+        if (directory == null) {
+            return;
+        }
+
+        try {
+            String result = MinecraftFilesChecker.check(
+                    directory.getAbsolutePath()
+            );
+
+            showMessage("Результат проверки", result);
+
+        } catch (Exception ex) {
+            showMessage("Ошибка", ex.getMessage());
+        }
     }
 
-    private void showInfo(String message) {
+    // Нижняя панель
+    private HBox createFooter() {
+        Label status = new Label("● WhiteLauncher готов к работе");
+        status.setStyle("-fx-text-fill: #16A36A;");
+
+        HBox footer = new HBox(status);
+        footer.setAlignment(Pos.CENTER_LEFT);
+
+        return footer;
+    }
+
+    // Информационное окно
+    private void showMessage(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("WhiteLauncher");
-        alert.setHeaderText(null);
+        alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
     }
@@ -373,56 +321,4 @@ public class MainApp extends Application {
     }
 }
 
-
-private void showSystemInfo() {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("CraftLight Launcher");
-    alert.setHeaderText("Информация о компьютере");
-    alert.setContentText(SystemInfo.getReport());
-    alert.getDialogPane().setPrefWidth(480);
-    alert.showAndWait();
-}
-
-private void checkMinecraftFiles(String minecraftDirectory) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("CraftLight Launcher");
-    alert.setHeaderText("Результат проверки");
-    alert.setContentText(
-            MinecraftFilesChecker.check(minecraftDirectory)
-    );
-    alert.getDialogPane().setPrefWidth(520);
-    alert.showAndWait();
-}
-
-
-
-
-
-package launcher;
-
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
-public class MainApp extends Application {
-
-    @Override
-    public void start(Stage stage) {
-        stage.setTitle("WhiteLauncher");
-        stage.setWidth(900);
-        stage.setHeight(600);
-        stage.show();
-    }
-
-    private void showSystemInfo() {
-        // Информация о компьютере
-    }
-
-    private void checkMinecraftFiles(String minecraftDirectory) {
-        // Проверка файлов Minecraft
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
