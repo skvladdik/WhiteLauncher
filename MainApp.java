@@ -393,3 +393,36 @@ private void checkMinecraftFiles(String minecraftDirectory) {
     alert.getDialogPane().setPrefWidth(520);
     alert.showAndWait();
 }
+
+
+
+
+
+package launcher;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class MainApp extends Application {
+
+    @Override
+    public void start(Stage stage) {
+        stage.setTitle("WhiteLauncher");
+        stage.setWidth(900);
+        stage.setHeight(600);
+        stage.show();
+    }
+
+    private void showSystemInfo() {
+        // Информация о компьютере
+    }
+
+    private void checkMinecraftFiles(String minecraftDirectory) {
+        // Проверка файлов Minecraft
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
